@@ -14,6 +14,12 @@ int main(void){
    }
 }
 
+void GPIO_Handler(void) {
+    if (GPIO_PORTF_MIS_R & 0x10){
+        GPIO_PORTF_DATA_R ^= RED_LED;  // Toggle RED LED
+    }
+}
+
 void initial_setup(void) {
     // Enable clock for GPIO port F
     SYSCTL_RCGC2_R |= 0x00000020;       /* enable clock to GPIOF */
@@ -23,4 +29,8 @@ void initial_setup(void) {
     GPIO_PORTF_DIR_R = 0x0E;            /* set PORTF4 pin as input user switch pin */
     GPIO_PORTF_PUR_R = 0x11;    //10        /* PORTF4 is pulled up */
 
+    // Configure SysTick
+    NVIC_DIS0_R |= (1<<30); /*Enable PORTF Interrupt IRQ30 */
+    GPIO_PORTF_AHB_IM_R |= (1<<4)|(1<<0);
+    GPIO_PORTF_AHB_IS_R &= ~(1<<4)|~(1<<0); /* make bit 4, 0 edge sensitive */
 }
