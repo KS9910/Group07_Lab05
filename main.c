@@ -17,6 +17,7 @@ int main(void){
 
 void GPIO_Handler(void) {
     if (GPIO_PORTF_MIS_R & 0x10){
+        GPIO_PORTF_ICR_R |= SW1;   // Clear the interrupt flag for SW1
         GPIO_PORTF_DATA_R ^= RED_LED;  // Toggle RED LED
     }
 }
