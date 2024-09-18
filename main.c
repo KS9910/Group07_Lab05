@@ -2,6 +2,7 @@
 #include "tm4c123gh6pm.h"
 
 #define RED_LED (1U << 1)   // Red LED on port F, pin 1]
+#define SW1 (1U << 4)           // switch pin 4
 
 void initial_setup(void);
 void GPIO_Handler(void);
@@ -29,8 +30,14 @@ void initial_setup(void) {
     GPIO_PORTF_DIR_R = 0x0E;            /* set PORTF4 pin as input user switch pin */
     GPIO_PORTF_PUR_R = 0x11;    //10        /* PORTF4 is pulled up */
 
-    // Configure SysTick
-    NVIC_DIS0_R |= (1<<30); /*Enable PORTF Interrupt IRQ30 */
-    GPIO_PORTF_AHB_IM_R |= (1<<4)|(1<<0);
-    GPIO_PORTF_AHB_IS_R &= ~(1<<4)|~(1<<0); /* make bit 4, 0 edge sensitive */
+    // Interrupt configuration
+    GPIO_PORTF_IS_R &= ~SW1;    // Make PF4 edge-sensitive
+    GPIO_PORTF_IBE_R &= ~SW1;   // Disable both edges, we use IEV
+    GPIO_PORTF_IEV_R &= ~SW1;   // Falling edge trigger (when switch is pressed)
+    GPIO_PORTF_ICR_R |= SW1;    // Clear any prior interrupt
+    GPIO_PORTF_IM_R |= SW1;     // Unmask interrupt for SW1
+
+    // Enable interrupt in NVIC
+    NVIC_EN0_R |= (1 << 30);    // Enable IRQ30 (Port F)
+
 }
